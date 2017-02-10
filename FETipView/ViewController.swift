@@ -26,8 +26,6 @@ class ViewController: UIViewController {
         self.shakeView.layer.cornerRadius = 20.0
         self.view.addSubview(self.shakeView)
         
-        let mp3URL:URL = Bundle.main.url(forResource: "PEP/lesson2_game_end_2_Mr.Turner.mp3", withExtension: "")!
-        print("MP3播放路径----\(mp3URL)")
     }
 
     override func didReceiveMemoryWarning() {
@@ -45,14 +43,14 @@ class ViewController: UIViewController {
         //设置抖动幅度
 
         let animation:CABasicAnimation = CABasicAnimation(keyPath: "transform.rotation.z")
-        animation.fromValue = -0.05
-        animation.toValue = 0.05
-        animation.duration = 0.06;
+        animation.fromValue = -0.06
+        animation.toValue = 0.06
+        animation.duration = 0.06
         animation.autoreverses = false //是否重复 恢复原样
-        animation.repeatCount = 3
-       // animation.fillMode = kCAFillModeForwards
-       // animation.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseIn)
-        //animation.timingFunction = CAMediaTimingFunction(controlPoints: <#T##Float#>, <#T##c1y: Float##Float#>, <#T##c2x: Float##Float#>, <#T##c2y: Float##Float#>)
+        animation.repeatCount = 4
+        animation.fillMode = kCAFillModeForwards
+        animation.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut)
+      //  animation.timingFunction = CAMediaTimingFunction(controlPoints: 0.24, 0.9, 1.0, 0.0)
         self.shakeView.layer.add(animation, forKey: "shake")
     }
 

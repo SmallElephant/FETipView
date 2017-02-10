@@ -15,7 +15,6 @@
 		A84221271E4ABF9A0045BA13 /* FETipViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A84221261E4ABF9A0045BA13 /* FETipViewTests.swift */; };
 		A84221321E4ABF9A0045BA13 /* FETipViewUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A84221311E4ABF9A0045BA13 /* FETipViewUITests.swift */; };
 		A84221411E4AC0350045BA13 /* FETipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A84221401E4AC0350045BA13 /* FETipView.swift */; };
-		A8DA18771E4DCC730064D843 /* PEP in Resources */ = {isa = PBXBuildFile; fileRef = A8DA18761E4DCC730064D843 /* PEP */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,7 +49,6 @@
 		A84221311E4ABF9A0045BA13 /* FETipViewUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FETipViewUITests.swift; sourceTree = "<group>"; };
 		A84221331E4ABF9A0045BA13 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A84221401E4AC0350045BA13 /* FETipView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FETipView.swift; sourceTree = "<group>"; };
-		A8DA18761E4DCC730064D843 /* PEP */ = {isa = PBXFileReference; lastKnownFileType = folder; path = PEP; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,7 +99,6 @@
 		A84221101E4ABF990045BA13 /* FETipView */ = {
 			isa = PBXGroup;
 			children = (
-				A8DA18761E4DCC730064D843 /* PEP */,
 				A84221111E4ABF990045BA13 /* AppDelegate.swift */,
 				A84221131E4ABF990045BA13 /* ViewController.swift */,
 				A84221151E4ABF990045BA13 /* Main.storyboard */,
@@ -246,7 +243,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A8DA18771E4DCC730064D843 /* PEP in Resources */,
 				A842211C1E4ABF990045BA13 /* LaunchScreen.storyboard in Resources */,
 				A84221191E4ABF990045BA13 /* Assets.xcassets in Resources */,
 				A84221171E4ABF990045BA13 /* Main.storyboard in Resources */,
