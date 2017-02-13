@@ -24,6 +24,11 @@ class ViewController: UIViewController {
         self.shakeView.backgroundColor = UIColor.red
         self.shakeView.layer.masksToBounds = true
         self.shakeView.layer.cornerRadius = 20.0
+        
+        self.shakeView.layer.shadowColor = UIColor.green.cgColor
+        self.shakeView.layer.shadowRadius = 20
+            
+            
         self.view.addSubview(self.shakeView)
         
     }
@@ -42,16 +47,23 @@ class ViewController: UIViewController {
         
         //设置抖动幅度
 
-        let animation:CABasicAnimation = CABasicAnimation(keyPath: "transform.rotation.z")
-        animation.fromValue = -0.06
-        animation.toValue = 0.06
-        animation.duration = 0.06
-        animation.autoreverses = false //是否重复 恢复原样
-        animation.repeatCount = 4
-        animation.fillMode = kCAFillModeForwards
-        animation.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut)
-      //  animation.timingFunction = CAMediaTimingFunction(controlPoints: 0.24, 0.9, 1.0, 0.0)
-        self.shakeView.layer.add(animation, forKey: "shake")
+//        let animation:CABasicAnimation = CABasicAnimation(keyPath: "transform.rotation.z")
+//        animation.fromValue = -0.06
+//        animation.toValue = 0.06
+//        animation.duration = 0.06
+//        animation.autoreverses = false //是否重复 恢复原样
+//        animation.repeatCount = 4
+//        animation.fillMode = kCAFillModeForwards
+//        animation.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut)
+//      //  animation.timingFunction = CAMediaTimingFunction(controlPoints: 0.24, 0.9, 1.0, 0.0)
+//        self.shakeView.layer.add(animation, forKey: "shake")
+        
+        var preference:FEPreferences = FEPreferences()
+        preference.positioning.targetPoint = CGPoint(x: sender.center.x, y: sender.frame.maxY)
+        preference.drawing.message = "解忧杂货店"
+        
+        let tipView:FETipView = FETipView(preferences: preference)
+        tipView.show()
     }
 
 }

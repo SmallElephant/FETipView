@@ -9,290 +9,211 @@
 import Foundation
 import UIKit
 
-class FETipView:UIView {
+public struct FEPreferences {
     
-    let TRIANGLEWIDTH:CGFloat = 10.0
-    let TRIANGLEHEIGHT:CGFloat = 10.0
-    
-    var message:String = ""
-    var label:UILabel!
-    
-    convenience init(message:String!, point:CGPoint) {
-        self.init()
-        self.message = message
-        self.frame = CGRect.init(x: point.x, y: point.y + 20, width: 200, height: 50)
-        self.backgroundColor = UIColor.white
+    public struct Drawing {
+        public var cornerRadius        = CGFloat(5)
+        public var arrowHeight         = CGFloat(8)
+        public var arrowWidth          = CGFloat(10)
+        
+        public var textInset           = CGFloat(8)
+        public var maxTextWidth        = CGFloat(180)
+        public var maxHeight           = CGFloat(200)
+        public var minHeight           = CGFloat(40)
+ 
+        public var backgroundColor     = UIColor.orange
+
+        public var textAlignment       = NSTextAlignment.center
+        public var textColor           = UIColor.white
+        public var textBackGroundColor = UIColor.clear
+        public var borderWidth         = CGFloat(0)
+        public var borderColor         = UIColor.clear
+        public var font                = UIFont.systemFont(ofSize: 14)
+        public var message             = ""
     }
     
+    public struct Positioning {
+        public var targetPoint         = CGPoint.zero
+        public var arrowPosition       = UIPopoverArrowDirection.up
+    }
+    
+    public struct Animating {
+        public var showDuration         = 0.3
+        public var dismissDuration      = 2.0
+        public var dismissOnTap         = true
+    }
+    
+    public var drawing      = Drawing()
+    public var positioning  = Positioning()
+    public var animating    = Animating()
+    public var hasBorder : Bool {
+        return drawing.borderWidth > 0 && drawing.borderColor != UIColor.clear
+    }
+    
+    public init() {}
+}
+
+
+class FETipView:UIView {
+    
+    private let screenWidth:CGFloat = UIScreen.main.bounds.width
+    
+    private var label:UILabel!
+    private var message:String = ""
+    private var preference:FEPreferences!
+    
+    private var arrowHeight:CGFloat = 0
+    private var arrowWidth:CGFloat = 0
+    private var width:CGFloat = 0
+    private var point:CGPoint = .zero
+    
+    private var textSize:CGSize = .zero
+    private var contentSize:CGSize = .zero
+    
+    
+    convenience init(preferences:FEPreferences) {
+        self.init()
+        self.preference = preferences
+        
+        point = preference.positioning.targetPoint
+        arrowHeight = preference.drawing.arrowHeight
+        arrowWidth = preference.drawing.arrowWidth
+        width = preference.drawing.maxTextWidth + preference.drawing.textInset * 2
+        
+        message = preference.drawing.message
+        
+        self.frame = CGRect(x: point.x - width / 2, y: point.y, width: width, height: preference.drawing.minHeight)
+        self.backgroundColor = UIColor.clear
+    }
     
     public func show() {
-        label = UILabel.init(frame: CGRect.init(x: 0, y: TRIANGLEHEIGHT, width: 200, height: 40))
-        label.text = self.message
-        label.font = UIFont.systemFont(ofSize: 15.0)
-        label.textColor = UIColor.red
-        label.backgroundColor = UIColor.gray
-    //    label.layer.borderColor = UIColor.red.cgColor
-      //  label.layer.borderWidth = 1.0
-       // self.addSubview(label)
+        
+        self.computerTextSize()
+        
+        self.adjustFrame()
+        
+        let textHInset:CGFloat = ceil(((contentSize.height - arrowHeight) - textSize.height) / 2)
+        
+        label = UILabel.init(frame: CGRect.init(x:10, y: arrowHeight + textHInset, width: preference.drawing.maxTextWidth, height: textSize.height))
+        label.text = message
+        label.font = preference.drawing.font
+        label.textColor = preference.drawing.textColor
+        label.backgroundColor = preference.drawing.textBackGroundColor
+        label.textAlignment = preference.drawing.textAlignment
+        self.addSubview(label)
         
         UIApplication.shared.keyWindow?.addSubview(self)
         
-        self.transform = CGAffineTransform(scaleX: 0.75, y: 0.75)
-        UIView.animate(withDuration: 0.3, delay: 0, options: UIViewAnimationOptions.curveEaseInOut, animations: {
-            self.transform = CGAffineTransform(scaleX: 1.1, y: 1.1)
+        
+        UIView.animate(withDuration: preference.animating.showDuration, delay: 0, options: .curveEaseIn, animations: { 
+            self.transform = CGAffineTransform(scaleX: 1.05, y: 1.05)
         }) { (finished:Bool) in
             self.transform = CGAffineTransform.identity
         }
         
+       //  self.perform(#selector(self.dismiss), with: nil, afterDelay: self.preference.animating.dismissDuration)
+       
+    }
+    
+    func dismiss() {
+        
+        UIView.animate(withDuration: preference.animating.showDuration, delay: 0, options: .curveEaseInOut, animations: {
+            self.alpha = 0
+        }) { (finished:Bool) in
+            self.removeFromSuperview()
+        }
 
+    }
+    
+    // MARK:-  Private
+    
+    private func computerTextSize() {
+        
+        let textInset:CGFloat = preference.drawing.textInset
+        let attributes = [NSFontAttributeName : preference.drawing.font]
+        
+        var textSize = self.message.boundingRect(with: CGSize(width: preference.drawing.maxTextWidth, height: CGFloat.greatestFiniteMagnitude), options: NSStringDrawingOptions.usesLineFragmentOrigin, attributes: attributes, context: nil).size
+        
+        textSize.width = ceil(textSize.width)
+        textSize.height = ceil(textSize.height)
+        
+        let minHeight:CGFloat = preference.drawing.minHeight
+        
+        
+        let retainMinHeight:CGFloat = minHeight - arrowHeight - textInset * 2
+        let retainMaxHeight:CGFloat = preference.drawing.maxHeight - arrowHeight - textInset * 2
+        
+        if textSize.height < retainMinHeight {
+            textSize.height = retainMinHeight
+        }
+        
+        if  textSize.height > retainMaxHeight  {
+            textSize.height = retainMaxHeight
+        }
+        
+        var contentHeight:CGFloat = textSize.height + arrowHeight + textInset * 2
+        
+        if textSize.height > retainMinHeight && textSize.height < minHeight {
+            contentHeight = minHeight
+        }
+        
+        self.textSize = textSize
+        
+        self.contentSize = CGSize(width: width, height: contentHeight)
         
     }
     
-    private func dismiss() {
+    private func adjustFrame() {
+        var frameX:CGFloat = point.x - width / 2
+        if (point.x - width / 2) < 0 {
+            frameX = 1
+        }
         
+        if (point.x + width / 2 > screenWidth) {
+            frameX = screenWidth - width - 1
+        }
+        
+        self.frame = CGRect(x: frameX, y: point.y, width: width, height: contentSize.height)
     }
     
-    //MARK: - Override
+    // MARK:- Override
     
     override func draw(_ rect: CGRect) {
         guard UIGraphicsGetCurrentContext() != nil else {
             return
         }
+     //   self.adjustFrame()
         let context = UIGraphicsGetCurrentContext()!
         context.saveGState()
-        context.setFillColor(UIColor.red.cgColor)
-        context.setStrokeColor(UIColor.red.cgColor)
-        context.setLineWidth(1.0)
         
+        
+        context.setFillColor(preference.drawing.backgroundColor.cgColor)
+        context.setStrokeColor(preference.drawing.backgroundColor.cgColor)
+     
+        let height:CGFloat = preference.drawing.minHeight
+        let radius:CGFloat = (contentSize.height - arrowHeight) / 2
         
         let contourPath = CGMutablePath()
-        contourPath.move(to: CGPoint(x: 100, y: 0))
+        let beginX:CGFloat = point.x - self.frame.origin.x
         
-        contourPath.addLine(to: CGPoint(x: 100 - TRIANGLEWIDTH / 2, y: TRIANGLEHEIGHT))
-
+        contourPath.move(to: CGPoint(x: beginX, y: 0))
         
-        contourPath.addArc(tangent1End:CGPoint(x: 0, y: 10), tangent2End: CGPoint(x: 0, y: 50), radius: 20.0)
-      
-        contourPath.addArc(tangent1End:CGPoint(x: 0, y: 50), tangent2End: CGPoint(x: 200, y: 50), radius: 20.0)
+        contourPath.addLine(to: CGPoint(x: beginX - arrowWidth / 2, y: arrowHeight))
         
-        contourPath.addArc(tangent1End:CGPoint(x: 200, y: 50), tangent2End: CGPoint(x: 200, y: 10), radius: 20.0)
+        contourPath.addArc(tangent1End:CGPoint(x: 0, y: arrowHeight), tangent2End: CGPoint(x: 0, y:height), radius: radius)
+        contourPath.addArc(tangent1End:CGPoint(x: 0, y: height), tangent2End: CGPoint(x: width, y: height), radius: radius)
         
-        contourPath.addArc(tangent1End:CGPoint(x: 200, y: 10), tangent2End: CGPoint(x: 100 + TRIANGLEWIDTH / 2, y: TRIANGLEHEIGHT), radius: 20.0)
+        contourPath.addArc(tangent1End:CGPoint(x: width, y: height), tangent2End: CGPoint(x: width, y: arrowHeight), radius: radius)
+        contourPath.addArc(tangent1End:CGPoint(x: width, y: arrowHeight), tangent2End: CGPoint(x: 0, y: arrowHeight), radius: radius)
         
-        contourPath.addLine(to: CGPoint(x: 100 + TRIANGLEWIDTH / 2, y: TRIANGLEHEIGHT))
-        contourPath.addLine(to: CGPoint(x: 100, y: 0))
+        contourPath.addLine(to: CGPoint(x: beginX + arrowWidth / 2, y: arrowHeight))
+        
+        contourPath.addLine(to: CGPoint(x: beginX, y: 0))
+        
         context.addPath(contourPath)
-        
         context.drawPath(using: CGPathDrawingMode.fillStroke)
         
         context.restoreGState()
-    }
-    
-     func draw7(_ rect: CGRect) {
-        guard UIGraphicsGetCurrentContext() != nil else {
-            return
-        }
-        let context = UIGraphicsGetCurrentContext()!
-        context.saveGState()
-        context.setFillColor(UIColor.orange.cgColor)
-        context.setStrokeColor(UIColor.red.cgColor)
-        context.setLineWidth(3.0)
-        
-        
-        let contourPath = CGMutablePath()
-        contourPath.move(to: CGPoint(x: 100, y: 0))
-        
-        contourPath.addLine(to: CGPoint(x: 100 - TRIANGLEWIDTH / 2, y: TRIANGLEHEIGHT))
-        
-        contourPath.addArc(tangent1End:CGPoint(x: 0, y: 10), tangent2End: CGPoint(x: 0, y: 50), radius: 20.0)
-        contourPath.addArc(tangent1End:CGPoint(x: 0, y: 50), tangent2End: CGPoint(x: 200, y: 50), radius: 20.0)
-        contourPath.addArc(tangent1End:CGPoint(x: 200, y: 50), tangent2End: CGPoint(x: 200, y: 10), radius: 20.0)
-        contourPath.addArc(tangent1End:CGPoint(x: 200, y: 10), tangent2End: CGPoint(x: 0, y: 10), radius: 20.0)
-        
-        contourPath.addLine(to: CGPoint(x: 100 + TRIANGLEWIDTH / 2, y: TRIANGLEHEIGHT))
-        contourPath.addLine(to: CGPoint(x: 100, y: 0))
-        context.addPath(contourPath)
-        context.strokePath()
-        
-        context.restoreGState()
-    }
-    
-    
-    func draw6(_ rect: CGRect) {
-        guard UIGraphicsGetCurrentContext() != nil else {
-            return
-        }
-        let context = UIGraphicsGetCurrentContext()!
-        context.saveGState()
-        context.setFillColor(UIColor.orange.cgColor)
-        //context.setStrokeColor(UIColor.red.cgColor)
-        
-        let contourPath = CGMutablePath()
-        contourPath.move(to: CGPoint(x: 100, y: 0))
-        
-        contourPath.addLine(to: CGPoint(x: 100 - TRIANGLEWIDTH / 2, y: TRIANGLEHEIGHT))
-        
-        contourPath.addArc(tangent1End:CGPoint(x: 0, y: 10), tangent2End: CGPoint(x: 0, y: 50), radius: 5.0)
-        contourPath.addArc(tangent1End:CGPoint(x: 0, y: 50), tangent2End: CGPoint(x: 200, y: 50), radius: 5.0)
-        contourPath.addArc(tangent1End:CGPoint(x: 200, y: 50), tangent2End: CGPoint(x: 200, y: 10), radius: 5.0)
-        contourPath.addArc(tangent1End:CGPoint(x: 200, y: 10), tangent2End: CGPoint(x: 0, y: 10), radius: 5.0)
-        
-        contourPath.addLine(to: CGPoint(x: 100 + TRIANGLEWIDTH / 2, y: TRIANGLEHEIGHT))
-        
-        context.addPath(contourPath)
-        context.fillPath()
-        
-        context.restoreGState()
-    }
-    
-    func draw5(_ rect: CGRect) {
-        
-        let path:UIBezierPath = UIBezierPath.init()
-        
-        path.move(to: CGPoint(x: 100, y: 0))
-        
-        path.addLine(to: CGPoint(x: 100 - TRIANGLEWIDTH / 2, y: TRIANGLEHEIGHT))
-        
-        path.move(to:CGPoint(x: 100 - TRIANGLEWIDTH / 2, y: TRIANGLEHEIGHT))
-
-        
-        path.addLine(to: CGPoint(x: 0, y: 10))
-        
-        
-        
-        path.move(to: CGPoint(x: 0, y: 10))
-        path.addQuadCurve(to: CGPoint(x: 0, y: 50), controlPoint: CGPoint(x: 0, y: 30))
-        
-        path.move(to: CGPoint(x: 0, y: 50))
-        path.addLine(to: CGPoint(x: 200, y: 50))
-        
-        path.move(to: CGPoint(x: 200, y: 50))
-        path.addQuadCurve(to: CGPoint(x: 200, y: 10), controlPoint: CGPoint(x: 200, y: 30))
-        
-        path.move(to: CGPoint(x: 200, y: 10))
-        path.addLine(to: CGPoint(x: 100 + TRIANGLEWIDTH / 2, y: TRIANGLEHEIGHT))
-        
-        path.move(to:CGPoint(x: 100 + TRIANGLEWIDTH / 2, y: TRIANGLEHEIGHT))
-        path.addLine(to: CGPoint(x: 100, y: 0))
-        
-        path.close()
-        UIColor.blue.set()
-        path.fill()
-        
-        UIColor.red.set()
-        path.lineWidth = 3.0
-        path.stroke()
-    }
-    
-     func draw4(_ rect: CGRect) {
-        guard UIGraphicsGetCurrentContext() != nil else {
-            return
-        }
-        let context = UIGraphicsGetCurrentContext()!
-        context.saveGState()
-     //   context.setFillColor(UIColor.orange.cgColor)
-        context.setStrokeColor(UIColor.red.cgColor)
-        
-        let contourPath = CGMutablePath()
-        contourPath.move(to: CGPoint(x: 100, y: 0))
-        
-        contourPath.addLine(to: CGPoint(x: 100 - TRIANGLEWIDTH / 2, y: TRIANGLEHEIGHT))
-        
-        contourPath.addArc(tangent1End:CGPoint(x: 0, y: 10), tangent2End: CGPoint(x: 0, y: 50), radius: 0)
-        contourPath.addArc(tangent1End:CGPoint(x: 0, y: 50), tangent2End: CGPoint(x: 200, y: 50), radius: 0)
-        contourPath.addArc(tangent1End:CGPoint(x: 200, y: 50), tangent2End: CGPoint(x: 200, y: 10), radius: 0)
-        contourPath.addArc(tangent1End:CGPoint(x: 200, y: 10), tangent2End: CGPoint(x: 0, y: 10), radius: 0)
-        
-        contourPath.addLine(to: CGPoint(x: 100 + TRIANGLEWIDTH / 2, y: TRIANGLEHEIGHT))
-        
-        context.addPath(contourPath)
-        
-       // context.fillPath()
-        context.strokePath()
-        
-        context.restoreGState()
-    }
-    
-    func draw3(_ rect: CGRect) {
-        super.draw(rect)
-        guard UIGraphicsGetCurrentContext() != nil else {
-            return
-        }
-        
-        let context = UIGraphicsGetCurrentContext()!
-        
-        let path = CGMutablePath()
-        
-        path.move(to: CGPoint(x: 0, y: 0))
-        path.addLine(to: CGPoint(x: 200, y: 0))
-        path.addLine(to: CGPoint(x: 200, y: 50))
-        path.addLine(to: CGPoint(x: 0, y: 50))
-        path.addLine(to: CGPoint(x: 0, y: 0))
-        
-        context.addPath(path)
-        context.setStrokeColor(UIColor.red.cgColor)
-        context.setFillColor(UIColor.orange.cgColor)
-        context.fillPath()
-        
-        context.setLineWidth(10)
-        context.strokePath()
- 
-        
-    }
-    
-     func draw2(_ rect: CGRect) {
-
-        guard UIGraphicsGetCurrentContext() != nil else {
-            return
-        }
-        let context = UIGraphicsGetCurrentContext()!
-        context.saveGState()
-        context.setFillColor(UIColor.white.cgColor)
-        context.setLineWidth(1.0)
-        context.setStrokeColor(UIColor.red.cgColor)
-        
-        context.move(to: CGPoint(x: 100, y: 0))
-        
-        context.addLine(to: CGPoint(x: 100 - TRIANGLEWIDTH / 2, y: TRIANGLEHEIGHT))
-        
-        context.addArc(tangent1End:CGPoint(x: 0, y: 10), tangent2End: CGPoint(x: 0, y: 50), radius: 5.0)
-        context.addArc(tangent1End:CGPoint(x: 0, y: 50), tangent2End: CGPoint(x: 200, y: 50), radius: 5.0)
-        context.addArc(tangent1End:CGPoint(x: 200, y: 50), tangent2End: CGPoint(x: 200, y: 10), radius: 5.0)
-        context.addArc(tangent1End:CGPoint(x: 200, y: 10), tangent2End: CGPoint(x: 0, y: 10), radius: 5.0)
-        
-        context.addLine(to: CGPoint(x: 100 + TRIANGLEWIDTH / 2, y: TRIANGLEHEIGHT))
-        
-        context.closePath()
-        context.drawPath(using: CGPathDrawingMode.fillStroke)
-        context.restoreGState()
-        
-    }
-    
-     func draw1(_ rect: CGRect) {
-        guard UIGraphicsGetCurrentContext() != nil else {
-            return
-        }
-        let context = UIGraphicsGetCurrentContext()!
-        context.saveGState()
-        //context.setFillColor(UIColor.orange.cgColor)
-        context.setStrokeColor(UIColor.red.cgColor)
-        
-        let contourPath = CGMutablePath()
-        contourPath.move(to: CGPoint(x: 100, y: 0))
-        
-       contourPath.addLine(to: CGPoint(x: 100 - TRIANGLEWIDTH / 2, y: TRIANGLEHEIGHT))
-        
-        contourPath.addArc(tangent1End:CGPoint(x: 0, y: 10), tangent2End: CGPoint(x: 0, y: 50), radius: 0)
-        contourPath.addArc(tangent1End:CGPoint(x: 0, y: 50), tangent2End: CGPoint(x: 200, y: 50), radius: 0)
-        contourPath.addArc(tangent1End:CGPoint(x: 200, y: 50), tangent2End: CGPoint(x: 200, y: 10), radius: 0)
-        contourPath.addArc(tangent1End:CGPoint(x: 200, y: 10), tangent2End: CGPoint(x: 0, y: 10), radius: 0)
-        
-       contourPath.addLine(to: CGPoint(x: 100 + TRIANGLEWIDTH / 2, y: TRIANGLEHEIGHT))
-        
-        context.addPath(contourPath)
-        context.fillPath()
-        
-        context.restoreGState()
-
     }
 }
+

@@ -15,7 +15,6 @@
 		A84221271E4ABF9A0045BA13 /* FETipViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A84221261E4ABF9A0045BA13 /* FETipViewTests.swift */; };
 		A84221321E4ABF9A0045BA13 /* FETipViewUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A84221311E4ABF9A0045BA13 /* FETipViewUITests.swift */; };
 		A84221411E4AC0350045BA13 /* FETipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A84221401E4AC0350045BA13 /* FETipView.swift */; };
-		A8DA18791E4DE64D0064D843 /* Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8DA18781E4DE64D0064D843 /* Test.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,7 +49,6 @@
 		A84221311E4ABF9A0045BA13 /* FETipViewUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FETipViewUITests.swift; sourceTree = "<group>"; };
 		A84221331E4ABF9A0045BA13 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A84221401E4AC0350045BA13 /* FETipView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FETipView.swift; sourceTree = "<group>"; };
-		A8DA18781E4DE64D0064D843 /* Test.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Test.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,7 +106,6 @@
 				A84221181E4ABF990045BA13 /* Assets.xcassets */,
 				A842211A1E4ABF990045BA13 /* LaunchScreen.storyboard */,
 				A842211D1E4ABF990045BA13 /* Info.plist */,
-				A8DA18781E4DE64D0064D843 /* Test.swift */,
 			);
 			path = FETipView;
 			sourceTree = "<group>";
@@ -274,7 +271,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A84221141E4ABF990045BA13 /* ViewController.swift in Sources */,
-				A8DA18791E4DE64D0064D843 /* Test.swift in Sources */,
 				A84221411E4AC0350045BA13 /* FETipView.swift in Sources */,
 				A84221121E4ABF990045BA13 /* AppDelegate.swift in Sources */,
 			);
