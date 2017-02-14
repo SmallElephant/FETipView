@@ -18,7 +18,7 @@ public struct FEPreferences {
         
         public var textInset           = CGFloat(8)
         public var maxTextWidth        = CGFloat(180)
-        public var maxHeight           = CGFloat(200)
+        public var maxHeight           = CGFloat(160)
         public var minHeight           = CGFloat(40)
  
         public var backgroundColor     = UIColor.orange
@@ -70,6 +70,12 @@ class FETipView:UIView {
     private var textSize:CGSize = .zero
     private var contentSize:CGSize = .zero
     
+    private lazy var contenLabel:UILabel = {
+        var   label:UILabel = UILabel.init()
+        label.lineBreakMode = NSLineBreakMode.byTruncatingTail
+        label.numberOfLines = 0
+        return label
+    }()
     
     convenience init(preferences:FEPreferences) {
         self.init()
@@ -92,15 +98,13 @@ class FETipView:UIView {
         
         self.adjustFrame()
         
-        let textHInset:CGFloat = ceil(((contentSize.height - arrowHeight) - textSize.height) / 2)
+        self.contenLabel.text = message
+        self.contenLabel.font = preference.drawing.font
+        self.contenLabel.textColor = preference.drawing.textColor
+        self.contenLabel.backgroundColor = preference.drawing.textBackGroundColor
+        self.contenLabel.textAlignment = preference.drawing.textAlignment
         
-        label = UILabel.init(frame: CGRect.init(x:10, y: arrowHeight + textHInset, width: preference.drawing.maxTextWidth, height: textSize.height))
-        label.text = message
-        label.font = preference.drawing.font
-        label.textColor = preference.drawing.textColor
-        label.backgroundColor = preference.drawing.textBackGroundColor
-        label.textAlignment = preference.drawing.textAlignment
-        self.addSubview(label)
+        self.addSubview(contenLabel)
         
         UIApplication.shared.keyWindow?.addSubview(self)
         
@@ -111,7 +115,7 @@ class FETipView:UIView {
             self.transform = CGAffineTransform.identity
         }
         
-       //  self.perform(#selector(self.dismiss), with: nil, afterDelay: self.preference.animating.dismissDuration)
+       // self.perform(#selector(self.dismiss), with: nil, afterDelay: self.preference.animating.dismissDuration)
        
     }
     
@@ -165,6 +169,11 @@ class FETipView:UIView {
     
     private func adjustFrame() {
         var frameX:CGFloat = point.x - width / 2
+        var frameY:CGFloat = point.y
+        let textHInset:CGFloat = ceil(((contentSize.height - arrowHeight) - textSize.height) / 2)
+        
+        var contentY:CGFloat = textHInset
+        
         if (point.x - width / 2) < 0 {
             frameX = 1
         }
@@ -173,7 +182,20 @@ class FETipView:UIView {
             frameX = screenWidth - width - 1
         }
         
-        self.frame = CGRect(x: frameX, y: point.y, width: width, height: contentSize.height)
+        switch preference.positioning.arrowPosition {
+        case UIPopoverArrowDirection.up:
+            contentY = arrowHeight + textHInset
+            break
+        case UIPopoverArrowDirection.down:
+            frameY = point.y - contentSize.height
+            break
+        default:
+            break
+        }
+        
+        self.contenLabel.frame = CGRect.init(x: preference.drawing.textInset, y: contentY, width: preference.drawing.maxTextWidth, height: textSize.height)
+        
+        self.frame = CGRect(x: frameX, y: frameY, width: width, height: contentSize.height)
     }
     
     // MARK:- Override
@@ -182,18 +204,36 @@ class FETipView:UIView {
         guard UIGraphicsGetCurrentContext() != nil else {
             return
         }
-     //   self.adjustFrame()
+
         let context = UIGraphicsGetCurrentContext()!
         context.saveGState()
-        
-        
+
         context.setFillColor(preference.drawing.backgroundColor.cgColor)
         context.setStrokeColor(preference.drawing.backgroundColor.cgColor)
-     
-        let height:CGFloat = preference.drawing.minHeight
-        let radius:CGFloat = (contentSize.height - arrowHeight) / 2
         
         let contourPath = CGMutablePath()
+        
+        switch preference.positioning.arrowPosition {
+            case UIPopoverArrowDirection.up:
+              drawArrowUp(contourPath: contourPath)
+            break
+            case UIPopoverArrowDirection.down:
+             drawArrowDown(contourPath: contourPath)
+            break
+           default:
+           break
+        }
+      
+        context.addPath(contourPath)
+        context.drawPath(using: CGPathDrawingMode.fillStroke)
+        
+        context.restoreGState()
+    }
+    
+    private func drawArrowUp(contourPath:CGMutablePath) {
+        let height:CGFloat = contentSize.height
+        let radius:CGFloat = preference.drawing.cornerRadius
+        
         let beginX:CGFloat = point.x - self.frame.origin.x
         
         contourPath.move(to: CGPoint(x: beginX, y: 0))
@@ -209,11 +249,31 @@ class FETipView:UIView {
         contourPath.addLine(to: CGPoint(x: beginX + arrowWidth / 2, y: arrowHeight))
         
         contourPath.addLine(to: CGPoint(x: beginX, y: 0))
-        
-        context.addPath(contourPath)
-        context.drawPath(using: CGPathDrawingMode.fillStroke)
-        
-        context.restoreGState()
     }
+    
+    private func drawArrowDown(contourPath:CGMutablePath) {
+        let contentHeight:CGFloat = contentSize.height
+        let radius:CGFloat = preference.drawing.cornerRadius
+        
+        let beginX:CGFloat = point.x - self.frame.origin.x
+        
+        let height:CGFloat = contentHeight - arrowHeight
+        
+        contourPath.move(to: CGPoint(x: beginX, y: contentHeight))
+        
+        contourPath.addLine(to: CGPoint(x: beginX - arrowWidth / 2, y: height))
+        
+        contourPath.addArc(tangent1End:CGPoint(x: 0, y: height), tangent2End: CGPoint(x: 0, y: 0), radius: radius)
+        contourPath.addArc(tangent1End:CGPoint(x: 0, y: 0), tangent2End: CGPoint(x: width, y: 0), radius: radius)
+        
+        contourPath.addArc(tangent1End:CGPoint(x: width, y: 0), tangent2End: CGPoint(x: width, y: height), radius: radius)
+        contourPath.addArc(tangent1End:CGPoint(x: width, y: height), tangent2End: CGPoint(x: 0, y: height), radius: radius)
+        
+        contourPath.addLine(to: CGPoint(x: beginX + arrowWidth / 2, y: height))
+        
+        contourPath.addLine(to: CGPoint(x: beginX, y: contentHeight))
+    }
+    
+    
 }
 
