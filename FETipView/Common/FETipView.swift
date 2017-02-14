@@ -57,6 +57,7 @@ public struct FEPreferences {
 class FETipView:UIView {
     
     private let screenWidth:CGFloat = UIScreen.main.bounds.width
+    private let screenHeight:CGFloat = UIScreen.main.bounds.height
     
     private var label:UILabel!
     private var message:String = ""
@@ -152,8 +153,23 @@ class FETipView:UIView {
         
         let minHeight:CGFloat = preference.drawing.minHeight
         
-        let retainMinHeight:CGFloat = minHeight - arrowHeight - textInset * 2
-        let retainMaxHeight:CGFloat = preference.drawing.maxHeight - arrowHeight - textInset * 2
+        var retainMinHeight:CGFloat = 0
+        var retainMaxHeight:CGFloat = 0
+        
+        switch preference.positioning.arrowPosition {
+            
+        case UIPopoverArrowDirection.up,UIPopoverArrowDirection.down:
+            retainMinHeight = minHeight - arrowHeight - textInset * 2
+            retainMaxHeight = preference.drawing.maxHeight - arrowHeight - textInset * 2
+            break
+        case UIPopoverArrowDirection.left,UIPopoverArrowDirection.right:
+            retainMinHeight = minHeight - textInset * 2
+            retainMaxHeight = preference.drawing.maxHeight - textInset * 2
+            break
+        default:
+            break
+            
+        }
         
         if textSize.height < retainMinHeight {
             textSize.height = retainMinHeight
@@ -163,12 +179,25 @@ class FETipView:UIView {
             textSize.height = retainMaxHeight
         }
         
-        var contentHeight:CGFloat = textSize.height + arrowHeight + textInset * 2
+        var contentHeight:CGFloat = 0
         
+        switch preference.positioning.arrowPosition {
+            
+        case UIPopoverArrowDirection.up,UIPopoverArrowDirection.down:
+            contentHeight = textSize.height + arrowHeight + textInset * 2
+            break
+        case UIPopoverArrowDirection.left,UIPopoverArrowDirection.right:
+            contentHeight = textSize.height + textInset * 2
+            break
+        default:
+            break
+            
+        }
+    
         if textSize.height > retainMinHeight && textSize.height < minHeight {
             contentHeight = minHeight
         }
-        
+
         self.textSize = textSize
         
         self.contentSize = CGSize(width: width, height: contentHeight)
@@ -176,48 +205,77 @@ class FETipView:UIView {
     }
     
     private func adjustFrame() {
+        switch preference.positioning.arrowPosition {
+            
+        case UIPopoverArrowDirection.up,UIPopoverArrowDirection.down:
+            adjustDirectionUpDown()
+            
+        case UIPopoverArrowDirection.left,UIPopoverArrowDirection.right:
+            adjustDirectionLeftRight()
+        default:
+            break
+        }
+    }
+    
+    private func adjustDirectionUpDown() {
         var frameX:CGFloat = point.x - width / 2
         var frameY:CGFloat = point.y
-        var textHInset:CGFloat = ceil(((contentSize.height - arrowHeight) - textSize.height) / 2)
+        let textHInset:CGFloat = ceil(((contentSize.height - arrowHeight) - textSize.height) / 2)
         
         var contentY:CGFloat = textHInset
         
+        if (point.x - width / 2) < 0 {
+            frameX = 1
+        }
+        
+        if (point.x + width / 2 > screenWidth) {
+            frameX = screenWidth - width - 1
+        }
+        
         switch preference.positioning.arrowPosition {
         case UIPopoverArrowDirection.up:
-            if (point.x - width / 2) < 0 {
-                frameX = 1
-            }
-            
-            if (point.x + width / 2 > screenWidth) {
-                frameX = screenWidth - width - 1
-            }
             contentY = arrowHeight + textHInset
             break
         case UIPopoverArrowDirection.down:
-            if (point.x - width / 2) < 0 {
-                frameX = 1
-            }
-            
-            if (point.x + width / 2 > screenWidth) {
-                frameX = screenWidth - width - 1
-            }
             frameY = point.y - contentSize.height
-            break
-        case UIPopoverArrowDirection.left:
-            frameX = point.x - width
-            frameY = point.y - contentSize.height / 2
-            contentY = preference.drawing.textInset
-            break
-        case UIPopoverArrowDirection.right:
-            frameX = point.x
-            frameY = point.y - contentSize.height / 2
-            contentY = preference.drawing.textInset
             break
         default:
             break
         }
         
         self.contenLabel.frame = CGRect.init(x: preference.drawing.textInset, y: contentY, width: preference.drawing.maxTextWidth, height: textSize.height)
+        
+        self.frame = CGRect(x: frameX, y: frameY, width: width, height: contentSize.height)
+    }
+    
+    private func adjustDirectionLeftRight() {
+        var frameX:CGFloat = point.x
+        var frameY:CGFloat = point.y - contentSize.height / 2
+        
+        var contentX:CGFloat = preference.drawing.textInset
+
+        switch preference.positioning.arrowPosition {
+        case UIPopoverArrowDirection.left:
+            frameX = point.x - width
+            contentX = preference.drawing.textInset
+            break
+        case UIPopoverArrowDirection.right:
+            frameX = point.x
+            contentX = arrowWidth +  preference.drawing.textInset
+            break
+        default:
+            break
+        }
+        
+        if (point.y - contentSize.height / 2) < 0 {
+            frameY = 1
+        }
+        
+        if (point.y + contentSize.height / 2 > screenWidth) {
+            frameY = screenHeight - contentSize.height - 1
+        }
+        
+        self.contenLabel.frame = CGRect.init(x:contentX, y: preference.drawing.textInset, width: preference.drawing.maxTextWidth, height: textSize.height)
         
         self.frame = CGRect(x: frameX, y: frameY, width: width, height: contentSize.height)
     }
