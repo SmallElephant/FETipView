@@ -26,10 +26,12 @@ public struct FEPreferences {
         public var textAlignment       = NSTextAlignment.center
         public var textColor           = UIColor.white
         public var textBackGroundColor = UIColor.clear
-        public var borderWidth         = CGFloat(0)
-        public var borderColor         = UIColor.clear
         public var font                = UIFont.systemFont(ofSize: 14)
         public var message             = ""
+        
+        public var borderWidth         = CGFloat(1)
+        public var borderColor         = UIColor.clear
+        public var hasBorder           = false
     }
     
     public struct Positioning {
@@ -38,9 +40,10 @@ public struct FEPreferences {
     }
     
     public struct Animating {
-        public var showDuration         = 0.3
-        public var dismissDuration      = 2.0
-        public var dismissOnTap         = true
+        public var showDuration         = 0.25
+        public var delayDuration        = 2.0
+        public var dismissDuration      = 0.25
+        public var shouldDismiss        = true
     }
     
     public var drawing      = Drawing()
@@ -125,13 +128,15 @@ class FETipView:UIView {
             self.transform = CGAffineTransform.identity
         }
         
-       // self.perform(#selector(self.dismiss), with: nil, afterDelay: self.preference.animating.dismissDuration)
+        if preference.animating.shouldDismiss {
+             self.perform(#selector(self.dismiss), with: nil, afterDelay: self.preference.animating.delayDuration)
+        }
        
     }
     
     func dismiss() {
         
-        UIView.animate(withDuration: preference.animating.showDuration, delay: 0, options: .curveEaseInOut, animations: {
+        UIView.animate(withDuration: preference.animating.dismissDuration, delay: 0, options: .curveEaseInOut, animations: {
             self.alpha = 0
         }) { (finished:Bool) in
             self.removeFromSuperview()
@@ -316,6 +321,10 @@ class FETipView:UIView {
         context.addPath(contourPath)
         context.drawPath(using: CGPathDrawingMode.fillStroke)
         
+        if preference.drawing.hasBorder {
+            drawBorder(borderPath: contourPath, context: context)
+        }
+        
         context.restoreGState()
     }
     
@@ -406,6 +415,13 @@ class FETipView:UIView {
         contourPath.addLine(to: CGPoint(x: pathWidth, y: beginY + arrowHeight / 2))
         
         contourPath.addLine(to: CGPoint(x: width, y: beginY))
+    }
+    
+    private func drawBorder(borderPath: CGPath, context: CGContext) {
+        context.addPath(borderPath)
+        context.setStrokeColor(preference.drawing.borderColor.cgColor)
+        context.setLineWidth(preference.drawing.borderWidth)
+        context.strokePath()
     }
     
     
