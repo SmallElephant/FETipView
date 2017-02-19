@@ -25,7 +25,6 @@ class ViewController: UIViewController {
     }
 
     @IBAction func tipAction(_ sender: UIButton) {
-        
         var preference:FEPreferences = FEPreferences()
         preference.positioning.targetPoint = CGPoint(x: sender.center.x, y: sender.frame.maxY)
         preference.drawing.message = "《道德经》是春秋时期老子（李耳）的哲学作品，又称《道德真经》、《老子》、《五千言》、《老子五千文》-FlyElephant"

@@ -424,6 +424,5 @@ class FETipView:UIView {
         context.strokePath()
     }
     
-    
 }
 
